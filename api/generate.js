@@ -125,43 +125,133 @@ Rules: No playbook step can involve "${fd.wont}". At least one step must leverag
 function buildAdvisorEmail(fd, report, pillarData, top2, topStr) {
   const tierColors = { Critical: '#A32D2D', Developing: '#854F0B', Progressing: '#3B6D11', Advanced: '#0F6E56' };
   const tc = tierColors[fd.tier] || '#1D9E75';
-  return `<!DOCTYPE html><html><body style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">
-  <div style="background:#f8f8f6;border-radius:12px;padding:24px;margin-bottom:20px;">
-    <h2 style="font-size:22px;margin:0 0 4px;">SmartShift Ai — Pre-Session Brief</h2>
-    <p style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin:0;">Advisor Only · SARCi v2</p>
+  const pillarColorMap = { foundation: '#378ADD', ai: '#7F77DD', leadflow: '#1D9E75', followup: '#BA7517', visibility: '#D85A30' };
+
+  return `<!DOCTYPE html><html><body style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:640px;margin:0 auto;padding:20px;color:#333;">
+
+  <!-- HEADER -->
+  <div style="text-align:center;padding:24px 0 20px;border-bottom:2px solid #1D9E75;margin-bottom:24px;">
+    <h1 style="font-size:26px;margin:0 0 4px;">SmartShift <span style="color:#1D9E75;">Ai</span></h1>
+    <p style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin:0;">SARCi — Full Submission Report</p>
   </div>
-  <div style="background:#fff;border:1px solid #eee;border-radius:10px;padding:20px;margin-bottom:16px;">
-    <h3 style="margin:0 0 8px;font-size:14px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Client</h3>
-    <p style="margin:0;font-size:16px;font-weight:600;">${fd.name}</p>
+
+  <!-- CLIENT INFO -->
+  <div style="background:#f8f8f6;border-radius:10px;padding:16px;margin-bottom:20px;">
+    <p style="margin:0;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Submitted by</p>
+    <p style="margin:4px 0 0;font-size:18px;font-weight:600;">${fd.name}</p>
     <p style="margin:4px 0 0;font-size:13px;color:#666;">${fd.business} · ${fd.industry} · ${fd.location}</p>
     <p style="margin:4px 0 0;font-size:13px;color:#666;">${fd.email}</p>
   </div>
-  <div style="background:#fff;border:1px solid #eee;border-radius:10px;padding:20px;margin-bottom:16px;">
-    <h3 style="margin:0 0 12px;font-size:14px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Score Summary</h3>
-    <div style="font-size:32px;font-weight:700;color:${tc};">${fd.total}/100 <span style="font-size:16px;">${fd.tier}</span></div>
-    <table style="width:100%;margin-top:12px;border-collapse:collapse;">
-      ${pillarData.map(p => {
-        const pct = Math.round((p.score / p.max) * 100);
-        const status = pct < 40 ? 'Gap' : pct < 70 ? 'Improve' : 'Strength';
-        const sc = pct < 40 ? '#A32D2D' : pct < 70 ? '#854F0B' : '#0F6E56';
-        return `<tr><td style="padding:4px 0;font-size:13px;">${p.name}</td><td style="font-size:13px;font-weight:600;">${p.score.toFixed(1)}/${p.max}</td><td style="font-size:12px;color:${sc};">${status}</td></tr>`;
-      }).join('')}
-    </table>
+
+  <!-- SCORE -->
+  <div style="background:#f8f8f6;border-radius:10px;padding:20px;margin-bottom:20px;text-align:center;">
+    <div style="font-size:52px;font-weight:700;color:${tc};line-height:1;">${fd.total}</div>
+    <div style="font-size:16px;font-weight:600;color:${tc};margin-bottom:8px;">${fd.tier}</div>
+    <p style="font-size:13px;color:#666;margin:0;">${report.score_narrative}</p>
   </div>
-  <div style="background:#FCEBEB;border-radius:10px;padding:20px;margin-bottom:16px;">
-    <h3 style="margin:0 0 10px;font-size:14px;color:#A32D2D;text-transform:uppercase;letter-spacing:0.5px;">Top 2 Priority Gaps</h3>
-    ${top2.map(g => `<div style="padding:6px 0;font-size:13px;color:#A32D2D;font-weight:500;">• ${g}</div>`).join('')}
+
+  <!-- PILLAR BREAKDOWN -->
+  <h2 style="font-size:16px;margin:24px 0 12px;color:#1a1a1a;">Pillar Breakdown</h2>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+    ${pillarData.map(p => {
+      const pct = Math.round((p.score / p.max) * 100);
+      const status = pct < 40 ? 'Gap' : pct < 70 ? 'Improve' : 'Strength';
+      const sc = pct < 40 ? '#A32D2D' : pct < 70 ? '#854F0B' : '#0F6E56';
+      const color = pillarColorMap[p.key] || '#1D9E75';
+      return `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+        <div style="font-size:13px;font-weight:500;">${p.name}</div>
+        <div style="background:#eee;border-radius:3px;height:4px;margin-top:4px;overflow:hidden;">
+          <div style="background:${color};height:100%;width:${pct}%;border-radius:3px;"></div>
+        </div>
+      </td>
+      <td style="padding:8px 0 8px 12px;border-bottom:1px solid #eee;white-space:nowrap;font-size:13px;font-weight:600;">${p.score.toFixed(1)}/${p.max}</td>
+      <td style="padding:8px 0 8px 8px;border-bottom:1px solid #eee;white-space:nowrap;font-size:12px;color:${sc};">${status}</td></tr>`;
+    }).join('')}
+  </table>
+
+  <!-- OPENING -->
+  <h2 style="font-size:16px;margin:24px 0 12px;color:#1a1a1a;">Opening Snapshot</h2>
+  <p style="font-size:14px;line-height:1.7;color:#333;">${report.opening}</p>
+
+  <!-- PILLAR NARRATIVES -->
+  <h2 style="font-size:16px;margin:24px 0 12px;color:#1a1a1a;">Pillar Narratives</h2>
+  <p style="font-size:14px;line-height:1.7;color:#333;"><strong>Foundation:</strong> ${report.pillar_narratives.foundation}</p>
+  <p style="font-size:14px;line-height:1.7;color:#333;"><strong>AI Readiness:</strong> ${report.pillar_narratives.ai_readiness}</p>
+  <p style="font-size:14px;line-height:1.7;color:#333;"><strong>Lead Flow:</strong> ${report.pillar_narratives.lead_flow}</p>
+  <p style="font-size:14px;line-height:1.7;color:#333;"><strong>Follow-Up:</strong> ${report.pillar_narratives.follow_up}</p>
+  <p style="font-size:14px;line-height:1.7;color:#333;"><strong>Visibility:</strong> ${report.pillar_narratives.visibility}</p>
+
+  <!-- PRIORITY GAPS -->
+  <h2 style="font-size:16px;margin:24px 0 12px;color:#1a1a1a;">Priority Gaps</h2>
+  <div style="background:#FCEBEB;border-radius:8px;padding:16px;margin-bottom:12px;">
+    <p style="font-size:13px;font-weight:600;color:#A32D2D;margin:0 0 6px;">Gap 1: ${report.priority_gap_1.pillar}</p>
+    <p style="font-size:13px;line-height:1.6;color:#333;margin:0 0 6px;">${report.priority_gap_1.diagnosis}</p>
+    <p style="font-size:13px;line-height:1.6;color:#333;margin:0;">${report.priority_gap_1.leverage}</p>
   </div>
+  <div style="background:#FCEBEB;border-radius:8px;padding:16px;margin-bottom:20px;">
+    <p style="font-size:13px;font-weight:600;color:#A32D2D;margin:0 0 6px;">Gap 2: ${report.priority_gap_2.pillar}</p>
+    <p style="font-size:13px;line-height:1.6;color:#333;margin:0 0 6px;">${report.priority_gap_2.diagnosis}</p>
+    <p style="font-size:13px;line-height:1.6;color:#333;margin:0;">${report.priority_gap_2.leverage}</p>
+  </div>
+
+  <!-- PLAYBOOK -->
+  <h2 style="font-size:16px;margin:24px 0 12px;color:#1a1a1a;">30-Day Playbook</h2>
+  ${(report.playbook || []).map(s => `
+  <div style="display:flex;gap:12px;margin-bottom:12px;background:#f8f8f6;border-radius:8px;padding:14px;">
+    <div style="background:#1D9E75;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;text-align:center;line-height:26px;">${s.step}</div>
+    <div>
+      <p style="font-size:14px;font-weight:600;margin:0 0 4px;">${s.title}</p>
+      <p style="font-size:13px;color:#555;margin:0 0 3px;"><strong>What:</strong> ${s.what}</p>
+      <p style="font-size:13px;color:#555;margin:0 0 3px;"><strong>Why it matters:</strong> ${s.why}</p>
+      <p style="font-size:13px;color:#555;margin:0;"><strong>First move:</strong> ${s.first_move}</p>
+    </div>
+  </div>`).join('')}
+
+  <!-- AI OPPORTUNITIES -->
+  <h2 style="font-size:16px;margin:24px 0 12px;color:#1a1a1a;">AI Opportunities</h2>
+  ${(report.ai_opportunities || []).map(a => `
+  <div style="border-left:3px solid #7F77DD;padding:12px 16px;margin-bottom:10px;background:#f8f8f6;border-radius:0 8px 8px 0;">
+    <p style="font-size:14px;font-weight:600;margin:0 0 4px;">${a.tool}</p>
+    <p style="font-size:13px;color:#555;margin:0;">${a.what} ${a.why_them} ${a.start}</p>
+  </div>`).join('')}
+
+  <!-- CLOSING -->
+  <div style="background:#E1F5EE;border-radius:10px;padding:16px;margin:20px 0;">
+    <p style="font-size:14px;line-height:1.7;margin:0;">${report.closing}</p>
+  </div>
+
+  <!-- ADVISOR BRIEF DIVIDER -->
+  <div style="margin:40px 0 24px;padding:20px;background:#EEEDFE;border-radius:10px;border:2px dashed #7F77DD;">
+    <p style="font-size:11px;font-weight:600;color:#534AB7;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;">Advisor Only — Do Not Forward</p>
+    <h2 style="font-size:20px;color:#1a1a1a;margin:0;">Pre-Session Brief</h2>
+  </div>
+
+  <!-- ADVISOR SUMMARY -->
   <div style="background:#fff;border:1px solid #eee;border-radius:10px;padding:20px;margin-bottom:16px;">
-    <h3 style="margin:0 0 10px;font-size:14px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Advisor Summary</h3>
+    <h3 style="margin:0 0 10px;font-size:13px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Client Summary</h3>
     <p style="font-size:13px;line-height:1.6;margin:0;">${report.advisor_summary}</p>
   </div>
-  <div style="background:#fff;border:1px solid #eee;border-radius:10px;padding:20px;margin-bottom:16px;">
-    <h3 style="margin:0 0 10px;font-size:14px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Suggested Talking Points</h3>
-    ${(report.advisor_talking_points || []).map(t => `<div style="padding:5px 0;font-size:13px;line-height:1.5;border-bottom:1px solid #f0f0f0;">• ${t}</div>`).join('')}
+
+  <!-- TOP 2 GAPS -->
+  <div style="background:#FCEBEB;border-radius:10px;padding:20px;margin-bottom:16px;">
+    <h3 style="margin:0 0 10px;font-size:13px;color:#A32D2D;text-transform:uppercase;letter-spacing:0.5px;">Top 2 Priority Gaps</h3>
+    ${top2.map(g => `<div style="padding:5px 0;font-size:13px;color:#A32D2D;font-weight:500;">• ${g}</div>`).join('')}
   </div>
-  ${(report.advisor_red_flags || []).length ? `<div style="background:#FAEEDA;border-radius:10px;padding:20px;margin-bottom:16px;"><h3 style="margin:0 0 10px;font-size:14px;color:#854F0B;text-transform:uppercase;letter-spacing:0.5px;">Watch Items</h3>${report.advisor_red_flags.map(f => `<div style="padding:5px 0;font-size:13px;line-height:1.5;">⚠ ${f}</div>`).join('')}</div>` : ''}
-  <p style="font-size:11px;color:#aaa;text-align:center;margin-top:24px;">SmartShift Ai · SARCi v2 · Advisor Brief</p>
+
+  <!-- TALKING POINTS -->
+  <div style="background:#fff;border:1px solid #eee;border-radius:10px;padding:20px;margin-bottom:16px;">
+    <h3 style="margin:0 0 10px;font-size:13px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Suggested Talking Points</h3>
+    ${(report.advisor_talking_points || []).map(t => `<div style="padding:6px 0;font-size:13px;line-height:1.5;border-bottom:1px solid #f0f0f0;">• ${t}</div>`).join('')}
+  </div>
+
+  <!-- RED FLAGS -->
+  ${(report.advisor_red_flags || []).length ? `
+  <div style="background:#FAEEDA;border-radius:10px;padding:20px;margin-bottom:16px;">
+    <h3 style="margin:0 0 10px;font-size:13px;color:#854F0B;text-transform:uppercase;letter-spacing:0.5px;">Watch Items</h3>
+    ${report.advisor_red_flags.map(f => `<div style="padding:5px 0;font-size:13px;line-height:1.5;">⚠ ${f}</div>`).join('')}
+  </div>` : ''}
+
+  <p style="font-size:11px;color:#aaa;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:16px;">SmartShift Ai · SARCi v2 · Full Submission Report + Advisor Brief</p>
   </body></html>`;
 }
 
