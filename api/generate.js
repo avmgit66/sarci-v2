@@ -90,7 +90,7 @@ Rules: No playbook step can involve "${fd.wont}". At least one step must leverag
           'Authorization': `Bearer ${RESEND_API_KEY}`
         },
         body: JSON.stringify({
-          from: 'SARCi <sarci@smartshiftai.com>',
+          from: 'SARCi <sarci@gosmartshiftai.com>',
           to: [fd.advisorEmail || 'dbtech.avm@gmail.com'],
           subject: `New SARCi Submission: ${fd.name} — ${fd.total}/100 (${fd.tier})`,
           html: advisorEmailBody
@@ -106,7 +106,7 @@ Rules: No playbook step can involve "${fd.wont}". At least one step must leverag
           'Authorization': `Bearer ${RESEND_API_KEY}`
         },
         body: JSON.stringify({
-          from: 'SmartShift Ai <sarci@smartshiftai.com>',
+          from: 'SmartShift Ai <sarci@gosmartshiftai.com>',
           to: [fd.email],
           subject: `Your SARCi Roadmap is ready, ${fd.name}`,
           html: clientEmailBody
